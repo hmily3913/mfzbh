@@ -1,0 +1,15 @@
+html{
+margin:0;
+padding:0;
+background-color: #E4EAED;
+filter: progid:DXImageTransform.Microsoft.gradient(center top ,startColorstr='#F3F6F7', endColorstr='#E4EAED'); /* for IE */
+background-image: -moz-linear-gradient(center top , #F3F6F7 1px, rgba(243, 246, 247, 0) 1px), -moz-linear-gradient(left center , #F3F6F7 1px, rgba(243, 246, 247, 0) 1px), -moz-linear-gradient(center top , rgba(255, 255, 255, 0.3) 1px, rgba(243, 246, 247, 0) 1px), -moz-linear-gradient(left center , rgba(255, 255, 255, 0.3) 1px, rgba(243, 246, 247, 0) 1px);
+background-position: -2px 50%, -2px 50%, -2px 50%, -2px 50%;
+background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+font: 12px Arial, Helvetica, sans-serif;
+}
+body{
+margin:0 auto 0 auto;
+padding:20px;}
+h1{margin-top:-10px;}
+hr{margin:20px 0;}

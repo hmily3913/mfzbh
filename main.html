@@ -1,0 +1,347 @@
+﻿<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=utf-8">
+<TITLE>美丰平台主页</TITLE>
+<SCRIPT type="text/javascript" src="Script/jquery-1.7.2.min.js"></SCRIPT>
+<link rel="stylesheet" href="css/jquery-ui.css">
+<SCRIPT type="text/javascript" src="Script/jquery-ui.min.js"></SCRIPT>
+<link rel="stylesheet" href="css/zTreeStyle.css">
+<SCRIPT type="text/javascript" src="Script/jquery.ztree.all-3.2.min.js"></SCRIPT>
+<script language="javascript" src="Script/jquery.validate.js"></script>
+    <link href="lib/ligerUI/skins/Aqua/css/ligerui-all.css" rel="stylesheet" type="text/css" /> 
+    <script src="lib/ligerUI/js/ligerui.min.js" type="text/javascript"></script> 
+<script language="javascript" src="Script/LG.js"></script>
+
+<style type="text/css"> 
+    body,html{height:100%;}
+    body{ padding:0px; margin:0;   overflow:hidden;}  
+    .l-link{ display:block; height:26px; line-height:26px; padding-left:10px; text-decoration:underline; color:#333;}
+    .l-link2{text-decoration:underline; color:white; margin-left:2px;margin-right:2px;}
+    .l-layout-top{background:#102A49; color:White;}
+    .l-layout-bottom{ background:#E5EDEF; text-align:center;}
+    #pageloading{position:absolute; left:0px; top:0px;  width:100%; height:100%;z-index:99999;}/*background:white url('loading.gif') no-repeat center;*/
+    .l-link{ display:block; line-height:22px; height:22px; padding-left:16px;border:1px solid white; margin:4px;}
+    .l-link-over{ background:#FFEEAC; border:1px solid #DB9F00;} 
+    .l-winbar{ background:#2B5A76; height:30px; position:absolute; left:0px; bottom:0px; width:100%; z-index:99999;}
+    .space{ color:#E7E7E7;}
+    /* 顶部 */ 
+    .l-topmenu{ margin:0; padding:0; height:31px; line-height:31px; background:url('lib/images/top.jpg') repeat-x bottom;  position:relative; border-top:1px solid #1D438B;  }
+    .l-topmenu-logo{ color:#E7E7E7; padding-left:35px; line-height:26px;background:url('lib/images/topicon.gif') no-repeat 10px 5px;}
+    .l-topmenu-welcome{  position:absolute; height:24px; line-height:24px;  right:30px; top:2px;color:#070A0C;}
+    .l-topmenu-welcome a{ color:#E7E7E7; text-decoration:underline} 
+
+ </style>
+<style type="text/css">
+	#Main-form label,#Main-form input { display:block; font-size:12px; }
+	#Main-form input.text { margin-bottom:8px; width:95%; padding: 4px;}
+	fieldset { padding:0; border:0; margin-top:10px;}
+	.ui-dialog .ui-state-error { padding: .3em; }
+	.validateTips { border: 1px solid transparent; padding: 3ps; }
+/*---------------搜索---------------*/
+input.empty{
+	color: lightgray;
+}
+/* ------------- 右键菜单 -----------------  */
+div#rMenu {
+	top:0;
+	visibility:hidden;
+	position:absolute;
+	background-color:#555555;
+	text-align: left;
+	padding:2px;
+	z-index:999;
+}
+
+div#rMenu ul {
+	margin:1px 0;
+	padding:0 5px;
+	cursor: pointer;
+	list-style: none outside none;
+	background-color:#DFDFDF;
+	font-size:12px;
+}
+div#rMenu ul li {
+	margin:0;
+	padding:2px 0;
+}
+</style>
+<SCRIPT type="text/javascript">
+	var zTree;
+	var centerIframe;
+	var setting = {
+		view: {
+			dblClickExpand: false,
+			showLine: true,
+			selectedMulti: false,
+			fontCss: getFontCss,
+			expandSpeed: ($.browser.msie && parseInt($.browser.version)<=6)?"":"fast"
+		},
+		async: {
+			enable: true,
+			url:"getMain.asp?ProcessType=getTree"
+		},
+		data: {
+			simpleData: {
+				enable:true,
+				idKey: "id",
+				pIdKey: "pId",
+				rootPId: ""
+			}
+		},
+		callback: {
+			onRightClick: OnRightClick,
+			beforeClick: function(treeId, treeNode) {
+				var zTree = $.fn.zTree.getZTreeObj("tree");
+				if (treeNode.isParent) {
+					zTree.expandNode(treeNode);
+					return false;
+				} else {
+//					centerIframe.attr("src",treeNode.TreeUrl);
+                        if (!treeNode.TreeUrl) return false;
+                        var tabid = treeNode.target;
+                        if (!tabid)
+                        {
+                            tabid = new Date().getTime();
+														treeNode.target=tabid;
+														zTree.updateNode(treeNode);
+                        } 
+                        f_addTab(tabid, treeNode.name, treeNode.TreeUrl);
+					return true;
+				}
+			}
+		}
+	};
+var key,lastValue = "", nodeList = [], fontCss = {};
+$(document).ready(function () {
+					
+	var t = $("#tree");
+	t = $.fn.zTree.init(t, setting);
+	centerIframe = $("#centerIframe");
+//	centerIframe.bind("load", loadReady);
+/*---------------搜索---------------*/
+	key = $("#key");
+	key.bind("focus", focusKey)
+	.bind("blur", blurKey)
+	$('#treesearch').bind("click", searchNode);
+//修改密码
+		//提示
+	$( "#dialog:ui-dialog" ).dialog( "destroy" );
+		$( "#Main-message" ).dialog({
+			autoOpen: false,
+			modal: true,
+			buttons: {
+				"确定": function() {
+					$( this ).dialog( "close" );
+				}
+			}
+		});
+		//表单
+		$( "#Main-form" ).dialog({
+		autoOpen: false,
+		height: 200,
+		width: 350,
+		modal: true,
+		buttons: {
+			"保存": function() {
+				$('#PDForm').submit();
+			},
+			Cancel: function() {
+				$( this ).dialog( "close" );
+			}
+		},
+		close: function() {
+		}
+	});
+	$("#PDForm").validate({
+		submitHandler:function(form){
+			$.post('getMain.asp?ProcessType=resetPD',$("#PDForm").serialize(),function(data){
+				var datajson=jQuery.parseJSON(data);//转换后的JSON对象
+				$( "#Main-form" ).dialog( "close" );
+				$('#messagemain').text(datajson.messages);
+				$( "#Main-message" ).dialog( "open" );
+			});
+		}
+	});
+});
+
+function getFontCss(treeId, treeNode) {
+	return (!!treeNode.highlight) ? {color:"#A60000", "font-weight":"bold"} : {color:"#333", "font-weight":"normal"};
+}
+function focusKey(e) {
+	if (key.hasClass("empty")) {
+		key.removeClass("empty");
+	}
+}
+function blurKey(e) {
+	if (key.get(0).value === "") {
+		key.addClass("empty");
+	}
+}
+function searchNode(e) {
+	var zTree = $.fn.zTree.getZTreeObj("tree");
+	zTree.expandAll(true);
+	var value = $.trim(key.get(0).value);
+	var keyType = "";
+	keyType = "name";
+	if (key.hasClass("empty")) {
+		value = "";
+	}
+	if (lastValue === value) return;
+	lastValue = value;
+	if (value === "") return;
+	updateNodes(false);
+
+	nodeList = zTree.getNodesByParamFuzzy(keyType, value);
+	updateNodes(true);
+
+}
+function updateNodes(highlight) {
+	var zTree = $.fn.zTree.getZTreeObj("tree");
+	for( var i=0, l=nodeList.length; i<l; i++) {
+		nodeList[i].highlight = highlight;
+		zTree.updateNode(nodeList[i]);
+	}
+}
+
+/*---------------搜索结束---------------*/
+function loadReady() {
+/*	var bodyH = centerIframe.contents().find("body").get(0).scrollHeight,
+	htmlH = centerIframe.contents().find("html").get(0).scrollHeight,
+	maxH = Math.max(bodyH, htmlH), minH = Math.min(bodyH, htmlH),
+	h = centerIframe.height() >= maxH ? minH:maxH ;
+	if (h < 530) h = 530;
+	centerIframe.height(h);*/
+}
+function resetTree() {
+	hideRMenu();
+	$.fn.zTree.init($("#tree"), setting);
+}
+function hideRMenu() {
+	if ($("#rMenu")) $("#rMenu").css({"visibility": "hidden"});
+	$("body").unbind("mousedown", onBodyMouseDown);
+}
+function onBodyMouseDown(event){
+	if (!(event.target.id == "rMenu" || $(event.target).parents("#rMenu").length>0)) {
+		$("#rMenu").css({"visibility" : "hidden"});
+	}
+}
+function OnRightClick(event, treeId, treeNode) {
+	if (!treeNode && event.target.tagName.toLowerCase() != "button" && $(event.target).parents("a").length == 0) {
+//		zTree.cancelSelectedNode();
+		showRMenu("root", event.clientX, event.clientY);
+	} 
+}
+function showRMenu(type, x, y) {
+	$("#rMenu ul").show();
+	$("#rMenu").css({"top":y+"px", "left":x+"px", "visibility":"visible"});
+
+	$("body").bind("mousedown", onBodyMouseDown);
+}
+</SCRIPT>
+</HEAD>
+
+<body style="padding:0px;background:#EAEEF5;">  
+
+
+
+
+<div id="pageloading"></div>  
+<div id="topmenu" class="l-topmenu">
+    <div class="l-topmenu-logo">
+    </div>
+    <div style="position:absolute;left:25%;WIDTH:300px;filter:alpha(opacity=90);background-color:none;">
+	<iframe 
+      style="Z-INDEX:3; VISIBILITY:inherit; WIDTH:100%; HEIGHT:30; margin:0; padding:0;"
+	  name="headFrame" id="headFrame" marginwidth="0" marginheight="0"
+	  src="Head.asp" frameborder="0"  scrolling="no">
+	</iframe>
+    </div>
+    <div class="l-topmenu-welcome">
+        <a href="#" class="l-link2" onClick="javascript:$.post('getMain.asp?AdminAction=Out',function(data){location.replace('index.htm');});">退出</a>
+        <span class="space">|</span>
+        <a href="#" class="l-link2" onClick="javascript:$('#Main-form').dialog('open');">修改密码</a> 
+    </div> 
+</div>
+  <div id="layout1" style="width:99.2%; margin:0 auto; margin-top:4px;height:100%"> 
+        <div position="left"  title="主要菜单" id="accordion1"> 
+             <ul id="tree" class="ztree" style="width:200px; overflow:hidden;"></ul>
+        </div>
+        <div position="center" id="framecenter"> 
+            <div tabid="home" title="我的主页" style="height:100%" >
+                <iframe frameborder="0" name="home" id="home" src="welcome.html"></iframe>
+            </div> 
+        </div> 
+        
+	</div>
+    <div  style="height:32px; line-height:32px; text-align:center;">
+            Copyright © 2012-2014 by zbh
+    </div>
+<script type="text/javascript">
+		var tab = null;
+		var accordion = null;
+		var tree = null;
+		//布局
+		$("#layout1").ligerLayout({ leftWidth: 200, height:'100%',heightDiff:-34,space:4, onHeightChanged: f_heightChanged });
+
+		var height = $(".l-layout-center").height();
+
+		//Tab
+		$("#framecenter").ligerTab({ height: height });
+
+		//面板
+		$("#accordion1").ligerAccordion({ height: height - 24, speed: null });
+
+		$(".l-link").hover(function ()
+		{
+				$(this).addClass("l-link-over");
+		}, function ()
+		{
+				$(this).removeClass("l-link-over");
+		});
+		//树
+
+		tab = $("#framecenter").ligerGetTabManager();
+		accordion = $("#accordion1").ligerGetAccordionManager();
+		tree = $("#tree1").ligerGetTreeManager();
+		$("#pageloading").hide();
+		function f_heightChanged(options)
+		{
+				if (tab)
+						tab.addHeight(options.diff);
+				if (accordion && options.middleHeight - 24 > 0)
+						accordion.setHeight(options.middleHeight - 24);
+		}
+		function f_addTab(tabid,text, url)
+		{ 
+				tab.addTabItem({ tabid : tabid,text: text, url: url });
+		} 
+		 
+		
+</script> 
+<div id="Main-form" title="修改密码" >
+	<form id="PDForm">
+	<fieldset>
+		<label for="OldPassword">原密码</label>
+		<input type="password" name="OldPassword" id="OldPassword" class="text ui-widget-content ui-corner-all required"/>
+		<label for="Newpassword">密码</label>
+		<input type="password" name="Newpassword" id="Newpassword" value="" class="text ui-widget-content ui-corner-all required" />
+		<label for="passwordconf">密码确认</label>
+		<input type="password" name="Newpasswordconf" id="Newpasswordconf" value="" class="text ui-widget-content ui-corner-all required" />
+	</fieldset>
+	</form>
+</div>
+<div id="rMenu">
+	<ul>
+		<li id="m_reset" onClick="resetTree();">重新载入权限</li>
+    <li id="m_reset"><input type="text" id="key" value="" class="empty" style="font:12px; width:60px;"/><span id="treesearch">查找</span></li>
+	</ul>
+</div>
+
+<div id="Main-message" title="操作提示">
+	<p>
+		<span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
+		<B id="messagemain">操作失败！.</B>
+	</p>
+</div>
+</body>
+</HTML>

@@ -1,0 +1,85 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8" />
+<META NAME="copyright" CONTENT="Copyright 2012-2015 - zbh" />
+<META NAME="Author" CONTENT="张斌和" />
+<META NAME="Keywords" CONTENT="企业平台" />
+<META NAME="Description" CONTENT="企业信息平台 by zbh 2012" />
+<TITLE>用户登录</TITLE>
+<LINK href="css/User_Login.css" type=text/css rel=stylesheet>
+<script language="javascript" src="Script/jquery-1.7.2.min.js"></script>
+<script language="javascript" src="Script/jquery.validate.js"></script>
+<link rel="stylesheet" href="css/jquery-ui.css">
+<SCRIPT type="text/javascript" src="Script/jquery-ui.min.js"></SCRIPT>
+<script language="javascript" >
+$(function(){
+	$("#AdminLogin").validate({
+		submitHandler:function(form){
+			$('#loadgif').fadeIn('slow');
+			$.post('CheckLogin.asp',$("#AdminLogin").serialize(),function(data){
+				 $('#loadgif').fadeOut('slow')
+				if(data.indexOf("名称")>-1) $('#ValrUserName').text(data);
+				else if(data.indexOf("密码")>-1) $('#ValrPassword').text(data);
+				else if(data.indexOf("成功")>-1){
+					 location.replace('main.html');
+				}
+			});
+		},
+		messages: {
+		   LoginName: "用户名不能为空！",
+		   LoginPassword: "密码不能为空！"
+		   },
+		errorPlacement: function(error, element) {  
+			if($(element).attr("id")=="LoginName"){
+				error.appendTo($('#ValrUserName'));  
+			}
+			else if($(element).attr("id")=="LoginPassword"){
+			error.appendTo($('#ValrPassword'));  
+			}
+		}
+	});
+});
+</script>
+</HEAD>
+<BODY id=userlogin_body>
+<DIV></DIV>
+	<form action="admin.asp" method="post" name="AdminLogin" id="AdminLogin" >
+<DIV id=user_login>
+<DL>
+  <DD id=user_top>
+  <UL>
+    <LI class=user_top_l></LI>
+    <LI class=user_top_c></LI>
+    <LI class=user_top_r></LI></UL>
+  <DD id=user_main>
+  <UL>
+    <LI class=user_main_l></LI>
+    <LI class=user_main_c>
+    <DIV class=user_main_box>
+    <UL>
+      <LI class=user_main_text>用户名： </LI>
+      <LI class=user_main_input><INPUT class='TxtUserNameCssClass required' id=LoginName 
+      maxLength=20 name=LoginName> </LI></UL>
+    <UL>
+      <LI class=user_main_text>密 码： </LI>
+      <LI class=user_main_input><INPUT class='TxtPasswordCssClass required' id=LoginPassword 
+      type=password name=LoginPassword> </LI></UL>
+    </DIV></LI>
+    <LI class=user_main_r><INPUT class=IbtnEnterCssClass id=submitLogin 
+    style="BORDER-TOP-WIDTH: 0px; BORDER-LEFT-WIDTH: 0px; BORDER-BOTTOM-WIDTH: 0px; BORDER-RIGHT-WIDTH: 0px" 
+    type=image src="images/user_botton.gif" name="submitLogin"> </LI></UL>
+  <DD id=user_bottom>
+  <UL>
+    <LI class=user_bottom_l></LI>
+    <LI class=user_bottom_c><SPAN style="MARGIN-TOP: 40px"></SPAN> </LI>
+    <LI class=user_bottom_r></LI></UL></DD></DL></DIV><SPAN id=ValrUserName 
+style="DISPLAY: block; COLOR: red"></SPAN><SPAN id=ValrPassword 
+style="DISPLAY: block; COLOR: red"></SPAN><DIV id=loadgif 
+style="z-index:999; background:#000 url(images/load.gif) no-repeat center center; opacity:0.2; filter:alpha(opacity=20);font-size:14px;line-height:20px;overflow:hidden;DISPLAY: NONE; height:40px;width:40px;"></DIV>
+<DIV id=ValidationSummary1 style="DISPLAY: none; COLOR: red"></DIV>
+
+<DIV></DIV>
+
+</FORM></BODY>
+</HTML>
